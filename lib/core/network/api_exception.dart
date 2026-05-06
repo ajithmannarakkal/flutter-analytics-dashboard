@@ -6,9 +6,7 @@ class ApiException implements Exception {
   ApiException(this.message, {this.statusCode, this.data});
 
   @override
-  String toString() {
-    return 'ApiException: $message (StatusCode: $statusCode)';
-  }
+  String toString() => message;
 
   factory ApiException.fromDioError(dynamic error) {
     if (error.runtimeType.toString() == 'DioException') {

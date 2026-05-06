@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dio/dio.dart';
+import '../../../core/network/api_exception.dart';
 import 'auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -30,21 +32,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
 
       if (success && mounted) {
-        // Redirection is handled by the GoRouter redirect logic based on auth state
-        // But for fallback or explicit navigation:
-        final authState = ref.read(authStateProvider).value;
-        if (authState != null) {
-          if (authState.role.name == 'admin') {
-            context.go('/admin');
+        // Redirection is handled automatically by the routerProvider watching authStateProvider
+      } else if (mounted) {
+        final state = ref.read(authStateProvider);
+        String errorMessage = 'Login failed';
+        
+        if (state.hasError) {
+          final error = state.error;
+          if (error is ApiException) {
+            errorMessage = error.message;
+          } else if (error is DioException && error.error is ApiException) {
+            errorMessage = (error.error as ApiException).message;
           } else {
-            context.go('/analytics');
+            errorMessage = error.toString();
           }
         }
-      } else if (mounted) {
-        final error = ref.read(authStateProvider).error;
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(error?.toString() ?? 'Login failed'),
+            content: Text(errorMessage),
             backgroundColor: Colors.redAccent,
           ),
         );

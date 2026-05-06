@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/splash/presentation/splash_screen.dart';
@@ -7,15 +8,22 @@ import '../../features/admin/presentation/admin_dashboard_screen.dart';
 import '../../features/analytics/presentation/analytics_dashboard_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final authNotifier = RouterNotifier(ref);
 
   return GoRouter(
     initialLocation: '/splash',
+    refreshListenable: authNotifier,
     redirect: (context, state) {
+      final authState = ref.read(authStateProvider);
       final isLoggingIn = state.matchedLocation == '/login';
       final isSplash = state.matchedLocation == '/splash';
 
       if (authState.isLoading) return null;
+
+      // If there is an auth error, stay on/redirect to login page
+      if (authState.hasError) {
+        return isLoggingIn ? null : '/login';
+      }
 
       final user = authState.value;
 
@@ -35,7 +43,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Role-based route guards
       if (state.matchedLocation.startsWith('/admin') && user.role.name != 'admin') {
-        return '/analytics'; // Redirect non-admins trying to access admin
+        return '/analytics';
       }
 
       return null;
@@ -60,3 +68,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+class RouterNotifier extends ChangeNotifier {
+  final Ref _ref;
+
+  RouterNotifier(this._ref) {
+    _ref.listen(authStateProvider, (previous, next) {
+      notifyListeners();
+    });
+  }
+}
