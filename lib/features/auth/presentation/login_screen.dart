@@ -63,6 +63,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             padding: const EdgeInsets.all(24.0),
             child: Form(
               key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -147,12 +148,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Demo Accounts:\nAdmin: admin@test.com / admin123\nUser: user@test.com / user123',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey, height: 1.5),
-                  )
                 ],
               ),
             ),
