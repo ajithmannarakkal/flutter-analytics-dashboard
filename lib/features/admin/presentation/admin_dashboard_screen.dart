@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dio/dio.dart';
+import '../../../core/network/api_exception.dart';
 import '../../auth/domain/user_model.dart';
 import '../../auth/presentation/auth_provider.dart';
 import '../../../core/widgets/action_confirm_sheet.dart';
@@ -161,7 +163,28 @@ class UserCard extends ConsumerWidget {
                       message: 'Are you sure you want to ${user.isActive ? 'disable' : 'enable'} ${user.name}?',
                       confirmLabel: user.isActive ? 'Disable' : 'Enable',
                       confirmColor: user.isActive ? Colors.red : Colors.green,
-                      onConfirm: () => actions.toggleUserStatus(user.id, !user.isActive),
+                      onConfirm: () async {
+                        try {
+                          await actions.toggleUserStatus(user.id, !user.isActive);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('User ${user.isActive ? 'disabled' : 'enabled'} successfully')),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            String errorMessage = e.toString();
+                            if (e is ApiException) {
+                              errorMessage = e.message;
+                            } else if (e is DioException && e.error is ApiException) {
+                              errorMessage = (e.error as ApiException).message;
+                            }
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+                            );
+                          }
+                        }
+                      },
                     );
                     break;
                   case 'delete':
@@ -171,11 +194,32 @@ class UserCard extends ConsumerWidget {
                       message: 'Are you sure you want to permanently delete ${user.name}?',
                       confirmLabel: 'Delete',
                       confirmColor: Colors.red,
-                      onConfirm: () => actions.deleteUser(user.id),
+                      onConfirm: () async {
+                        try {
+                          await actions.deleteUser(user.id);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('User deleted successfully')),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            String errorMessage = e.toString();
+                            if (e is ApiException) {
+                              errorMessage = e.message;
+                            } else if (e is DioException && e.error is ApiException) {
+                              errorMessage = (e.error as ApiException).message;
+                            }
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+                            );
+                          }
+                        }
+                      },
                     );
                     break;
                   case 'reset':
-                    _showResetPasswordDialog(context, user, actions);
+                    _showResetPasswordSheet(context, user, actions);
                     break;
                 }
               },
@@ -200,44 +244,153 @@ class UserCard extends ConsumerWidget {
     );
   }
 
-  void _showResetPasswordDialog(BuildContext context, UserModel user, AdminActions actions) {
+  void _showResetPasswordSheet(BuildContext context, UserModel user, AdminActions actions) {
     final passwordCtrl = TextEditingController();
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Reset Password for ${user.name}'),
-        content: TextField(
-          controller: passwordCtrl,
-          decoration: const InputDecoration(labelText: 'New Password'),
-          obscureText: true,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () async {
-              if (passwordCtrl.text.isNotEmpty) {
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          return _ResetPasswordSheetContent(
+            user: user,
+            actions: actions,
+            parentContext: context,
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ResetPasswordSheetContent extends StatefulWidget {
+  final UserModel user;
+  final AdminActions actions;
+  final BuildContext parentContext;
+
+  const _ResetPasswordSheetContent({
+    required this.user,
+    required this.actions,
+    required this.parentContext,
+  });
+
+  @override
+  State<_ResetPasswordSheetContent> createState() => _ResetPasswordSheetContentState();
+}
+
+class _ResetPasswordSheetContentState extends State<_ResetPasswordSheetContent> {
+  final _passwordCtrl = TextEditingController();
+  String? _error;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _passwordCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        left: 24,
+        right: 24,
+        top: 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_error != null)
+            Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.red.withOpacity(0.3)),
+              ),
+              child: Text(
+                _error!,
+                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          Text(
+            'Reset Password',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Enter new password for ${widget.user.name}',
+            style: TextStyle(color: Colors.grey[600]),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          TextField(
+            controller: _passwordCtrl,
+            decoration: InputDecoration(
+              labelText: 'New Password',
+              prefixIcon: const Icon(Icons.lock_outline),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            obscureText: true,
+            autofocus: true,
+            onChanged: (_) {
+              if (_error != null) setState(() => _error = null);
+            },
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: _isLoading ? null : () async {
+              if (_passwordCtrl.text.isNotEmpty) {
+                setState(() {
+                  _isLoading = true;
+                  _error = null;
+                });
                 try {
-                  await actions.resetPassword(user.id, passwordCtrl.text.trim());
-                  if (context.mounted) {
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
+                  await widget.actions.resetPassword(widget.user.id, _passwordCtrl.text.trim());
+                  if (mounted && widget.parentContext.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(widget.parentContext).showSnackBar(
                       const SnackBar(content: Text('Password reset successfully')),
                     );
                   }
                 } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(e.toString()),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
+                  String errorMessage = e.toString();
+                  if (e is ApiException) {
+                    errorMessage = e.message;
+                  } else if (e is DioException && e.error is ApiException) {
+                    errorMessage = (e.error as ApiException).message;
+                  }
+                  
+                  if (mounted) {
+                    setState(() {
+                      _error = errorMessage;
+                      _isLoading = false;
+                    });
                   }
                 }
               }
             },
-            child: const Text('Reset'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: _isLoading 
+              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              : const Text('Reset Password'),
           ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          const SizedBox(height: 24),
         ],
       ),
     );

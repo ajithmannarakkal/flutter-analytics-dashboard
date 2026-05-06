@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dio/dio.dart';
+import '../../../core/network/api_exception.dart';
 import '../../auth/domain/user_model.dart';
 import 'admin_provider.dart';
 
@@ -48,8 +50,14 @@ class _CreateUserScreenState extends ConsumerState<CreateUserScreen> {
         }
       } catch (e) {
         if (mounted) {
+          String errorMessage = e.toString();
+          if (e is ApiException) {
+            errorMessage = e.message;
+          } else if (e is DioException && e.error is ApiException) {
+            errorMessage = (e.error as ApiException).message;
+          }
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+            SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
           );
         }
       } finally {
