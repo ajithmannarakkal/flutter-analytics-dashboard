@@ -57,15 +57,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               onChanged: (val) {
                 ref.read(searchQueryProvider.notifier).state = val;
               },
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Search users...',
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: theme.cardTheme.color,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
+                prefixIcon: Icon(Icons.search),
               ),
             ),
           ),
@@ -330,10 +324,9 @@ class _ResetPasswordSheetContentState extends State<_ResetPasswordSheetContent> 
           const SizedBox(height: 24),
           TextField(
             controller: _passwordCtrl,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'New Password',
-              prefixIcon: const Icon(Icons.lock_outline),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              prefixIcon: Icon(Icons.lock_outline),
             ),
             obscureText: true,
             autofocus: true,
@@ -374,10 +367,6 @@ class _ResetPasswordSheetContentState extends State<_ResetPasswordSheetContent> 
                 }
               }
             },
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
             child: _isLoading 
               ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
               : const Text('Reset Password'),

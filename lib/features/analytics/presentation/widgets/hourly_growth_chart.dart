@@ -3,54 +3,121 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../analytics_provider.dart';
 
-class HourlyGrowthChart extends ConsumerWidget {
+class HourlyGrowthChart extends ConsumerStatefulWidget {
   const HourlyGrowthChart({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HourlyGrowthChart> createState() => _HourlyGrowthChartState();
+}
+
+class _HourlyGrowthChartState extends ConsumerState<HourlyGrowthChart> {
+  @override
+  Widget build(BuildContext context) {
     final hourlyAsync = ref.watch(hourlyGrowthProvider);
     final theme = Theme.of(context);
 
     return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: theme.dividerColor.withOpacity(0.05)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Hourly Purchase Growth',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Purchase Trends',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Hourly growth performance',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.5),
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.trending_up, color: theme.colorScheme.primary, size: 20),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             SizedBox(
               height: 250,
               child: hourlyAsync.when(
                 data: (data) {
+                  if (data.isEmpty) return const Center(child: Text('No trend data available'));
+                  
                   return LineChart(
                     LineChartData(
-                      gridData: const FlGridData(show: false),
+                      lineTouchData: LineTouchData(
+                        touchTooltipData: LineTouchTooltipData(
+                          getTooltipColor: (spot) => theme.colorScheme.surface,
+                          getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+                            return touchedBarSpots.map((barSpot) {
+                              return LineTooltipItem(
+                                '\$${barSpot.y.toStringAsFixed(2)}',
+                                TextStyle(
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            }).toList();
+                          },
+                        ),
+                      ),
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: true,
+                        horizontalInterval: 1,
+                        verticalInterval: 4,
+                        getDrawingHorizontalLine: (value) => FlLine(
+                          color: theme.dividerColor.withOpacity(0.05),
+                          strokeWidth: 1,
+                        ),
+                        getDrawingVerticalLine: (value) => FlLine(
+                          color: theme.dividerColor.withOpacity(0.05),
+                          strokeWidth: 1,
+                        ),
+                      ),
                       titlesData: FlTitlesData(
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
-                            reservedSize: 30,
+                            reservedSize: 32,
+                            interval: 4,
                             getTitlesWidget: (value, meta) {
-                              if (value.toInt() % 4 != 0) return const SizedBox();
                               return Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
+                                padding: const EdgeInsets.only(top: 12.0),
                                 child: Text(
                                   '${value.toInt()}:00',
-                                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: theme.colorScheme.onSurface.withOpacity(0.4),
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               );
                             },
                           ),
                         ),
-                        leftTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
+                        leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                       ),
@@ -59,13 +126,34 @@ class HourlyGrowthChart extends ConsumerWidget {
                         LineChartBarData(
                           spots: data.map((d) => FlSpot(d.hour.toDouble(), d.amount)).toList(),
                           isCurved: true,
-                          color: theme.colorScheme.primary,
+                          preventCurveOverShooting: true,
+                          gradient: LinearGradient(
+                            colors: [
+                              theme.colorScheme.primary,
+                              theme.colorScheme.primary.withOpacity(0.7),
+                            ],
+                          ),
                           barWidth: 4,
                           isStrokeCapRound: true,
-                          dotData: const FlDotData(show: false),
+                          dotData: FlDotData(
+                            show: true,
+                            getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+                              radius: 0, // Hide by default
+                              color: theme.colorScheme.primary,
+                              strokeWidth: 2,
+                              strokeColor: theme.colorScheme.surface,
+                            ),
+                          ),
                           belowBarData: BarAreaData(
                             show: true,
-                            color: theme.colorScheme.primary.withOpacity(0.2),
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                theme.colorScheme.primary.withOpacity(0.3),
+                                theme.colorScheme.primary.withOpacity(0.0),
+                              ],
+                            ),
                           ),
                         ),
                       ],

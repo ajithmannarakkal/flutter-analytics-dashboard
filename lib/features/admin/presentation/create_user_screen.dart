@@ -81,20 +81,18 @@ class _CreateUserScreenState extends ConsumerState<CreateUserScreen> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Full Name',
-                  prefixIcon: const Icon(Icons.person_outline),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: Icon(Icons.person_outline),
                 ),
                 validator: (val) => val == null || val.isEmpty ? 'Please enter name' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _emailController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Email Address',
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: Icon(Icons.email_outlined),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 validator: (val) => val == null || val.isEmpty ? 'Please enter email' : null,
@@ -102,10 +100,9 @@ class _CreateUserScreenState extends ConsumerState<CreateUserScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Password',
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: Icon(Icons.lock_outline),
                 ),
                 obscureText: true,
                 validator: (val) => val == null || val.length < 6 ? 'Password must be at least 6 characters' : null,
@@ -115,10 +112,6 @@ class _CreateUserScreenState extends ConsumerState<CreateUserScreen> {
               const SizedBox(height: 8),
               DropdownButtonFormField<Role>(
                 value: _selectedRole,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                ),
                 items: Role.values.map((role) {
                   return DropdownMenuItem(
                     value: role,
@@ -132,13 +125,9 @@ class _CreateUserScreenState extends ConsumerState<CreateUserScreen> {
               const SizedBox(height: 40),
               ElevatedButton(
                 onPressed: _isLoading ? null : _createUser,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
                 child: _isLoading 
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Create User', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Create User'),
               ),
             ],
           ),

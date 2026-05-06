@@ -98,12 +98,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 48),
                   TextFormField(
                     controller: _emailController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Email',
-                      prefixIcon: const Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      prefixIcon: Icon(Icons.email_outlined),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
@@ -116,12 +113,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      prefixIcon: Icon(Icons.lock_outline),
                     ),
                     obscureText: true,
                     enableSuggestions: false,
@@ -135,24 +129,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: 32),
-                  SizedBox(
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: authState.isLoading ? null : _login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: authState.isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              'Sign In',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                    ),
+                  ElevatedButton(
+                    onPressed: authState.isLoading ? null : _login,
+                    child: authState.isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Text('Sign In'),
                   ),
                 ],
               ),
