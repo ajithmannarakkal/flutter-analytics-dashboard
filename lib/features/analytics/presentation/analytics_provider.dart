@@ -1,10 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/network/network_provider.dart';
 import '../domain/analytics_model.dart';
 import '../domain/analytics_repository.dart';
-import '../data/mock_analytics_repository.dart';
+import '../data/analytics_repository_impl.dart';
+import '../data/analytics_remote_datasource.dart';
 
 final analyticsRepositoryProvider = Provider<AnalyticsRepository>((ref) {
-  return MockAnalyticsRepository();
+  final dioClient = ref.watch(dioClientProvider);
+  final remoteDataSource = AnalyticsRemoteDataSource(dioClient);
+  return AnalyticsRepositoryImpl(remoteDataSource);
 });
 
 final revenueProvider = FutureProvider.autoDispose<RevenueData>((ref) {

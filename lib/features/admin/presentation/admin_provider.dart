@@ -1,10 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/domain/user_model.dart';
+import '../../../core/network/network_provider.dart';
 import '../domain/admin_repository.dart';
-import '../data/mock_admin_repository.dart';
+import '../data/admin_repository_impl.dart';
+import '../data/admin_remote_datasource.dart';
 
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
-  return MockAdminRepository();
+  final dioClient = ref.watch(dioClientProvider);
+  final remoteDataSource = AdminRemoteDataSource(dioClient);
+  return AdminRepositoryImpl(remoteDataSource);
 });
 
 final usersListProvider = FutureProvider.autoDispose<List<UserModel>>((ref) {

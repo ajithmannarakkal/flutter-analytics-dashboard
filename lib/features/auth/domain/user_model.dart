@@ -1,11 +1,14 @@
+import 'package:equatable/equatable.dart';
+
 enum Role { admin, user }
 
-class UserModel {
+class UserModel extends Equatable {
   final String id;
   final String email;
   final String name;
   final Role role;
   final bool isActive;
+  final String? createdAt;
 
   const UserModel({
     required this.id,
@@ -13,15 +16,17 @@ class UserModel {
     required this.name,
     required this.role,
     this.isActive = true,
+    this.createdAt,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      name: json['name'] as String,
+      id: json['id'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      name: json['name'] as String? ?? '',
       role: json['role'] == 'admin' ? Role.admin : Role.user,
       isActive: json['isActive'] as bool? ?? true,
+      createdAt: json['createdAt'] as String?,
     );
   }
 
@@ -32,6 +37,7 @@ class UserModel {
       'name': name,
       'role': role == Role.admin ? 'admin' : 'user',
       'isActive': isActive,
+      if (createdAt != null) 'createdAt': createdAt,
     };
   }
 
@@ -41,6 +47,7 @@ class UserModel {
     String? name,
     Role? role,
     bool? isActive,
+    String? createdAt,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -48,6 +55,10 @@ class UserModel {
       name: name ?? this.name,
       role: role ?? this.role,
       isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
+
+  @override
+  List<Object?> get props => [id, email, name, role, isActive, createdAt];
 }

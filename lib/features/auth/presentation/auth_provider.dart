@@ -1,10 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/network/network_provider.dart';
+import '../../../core/storage/secure_storage_service.dart';
 import '../domain/user_model.dart';
 import '../domain/auth_repository.dart';
-import '../data/mock_auth_repository.dart';
+import '../data/auth_repository_impl.dart';
+import '../data/auth_remote_datasource.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return MockAuthRepository();
+  final dioClient = ref.watch(dioClientProvider);
+  final storageService = ref.watch(secureStorageProvider);
+  final remoteDataSource = AuthRemoteDataSource(dioClient);
+  return AuthRepositoryImpl(remoteDataSource, storageService);
 });
 
 final authStateProvider = StateNotifierProvider<AuthNotifier, AsyncValue<UserModel?>>((ref) {
