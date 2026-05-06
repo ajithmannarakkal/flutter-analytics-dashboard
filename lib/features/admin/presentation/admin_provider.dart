@@ -13,11 +13,24 @@ final adminRepositoryProvider = Provider<AdminRepository>((ref) {
 
 final usersListProvider = FutureProvider.autoDispose<List<UserModel>>((ref) {
   final repo = ref.watch(adminRepositoryProvider);
-  final searchQuery = ref.watch(searchQueryProvider);
-  return repo.getUsers(query: searchQuery);
+  // Fetch all users once
+  return repo.getUsers();
 });
 
 final searchQueryProvider = StateProvider<String>((ref) => '');
+
+final filteredUsersProvider = Provider.autoDispose<AsyncValue<List<UserModel>>>((ref) {
+  final usersAsync = ref.watch(usersListProvider);
+  final query = ref.watch(searchQueryProvider).toLowerCase();
+
+  return usersAsync.whenData((users) {
+    if (query.isEmpty) return users;
+    return users.where((user) {
+      return user.name.toLowerCase().contains(query) || 
+             user.email.toLowerCase().contains(query);
+    }).toList();
+  });
+});
 
 final adminActionsProvider = Provider<AdminActions>((ref) {
   return AdminActions(ref);

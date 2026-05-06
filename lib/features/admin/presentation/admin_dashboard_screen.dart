@@ -27,7 +27,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final usersAsync = ref.watch(usersListProvider);
+    final usersAsync = ref.watch(filteredUsersProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -55,10 +55,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               onChanged: (val) {
-                if (_debounce?.isActive ?? false) _debounce!.cancel();
-                _debounce = Timer(const Duration(milliseconds: 500), () {
-                  ref.read(searchQueryProvider.notifier).state = val;
-                });
+                ref.read(searchQueryProvider.notifier).state = val;
               },
               decoration: InputDecoration(
                 hintText: 'Search users...',
