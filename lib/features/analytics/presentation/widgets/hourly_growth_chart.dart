@@ -66,16 +66,18 @@ class _HourlyGrowthChartState extends ConsumerState<HourlyGrowthChart> {
                   
                   return LineChart(
                     LineChartData(
+                      backgroundColor: Colors.transparent,
                       lineTouchData: LineTouchData(
                         touchTooltipData: LineTouchTooltipData(
-                          getTooltipColor: (spot) => theme.colorScheme.surface,
+                          getTooltipColor: (spot) => theme.colorScheme.primary,
                           getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
                             return touchedBarSpots.map((barSpot) {
                               return LineTooltipItem(
-                                '\$${barSpot.y.toStringAsFixed(2)}',
-                                TextStyle(
-                                  color: theme.colorScheme.primary,
+                                '\$${barSpot.y.toStringAsFixed(0)}',
+                                const TextStyle(
+                                  color: Colors.white,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 12,
                                 ),
                               );
                             }).toList();
@@ -84,15 +86,10 @@ class _HourlyGrowthChartState extends ConsumerState<HourlyGrowthChart> {
                       ),
                       gridData: FlGridData(
                         show: true,
-                        drawVerticalLine: true,
-                        horizontalInterval: 1,
-                        verticalInterval: 4,
+                        drawVerticalLine: false,
+                        horizontalInterval: 5,
                         getDrawingHorizontalLine: (value) => FlLine(
-                          color: theme.dividerColor.withOpacity(0.05),
-                          strokeWidth: 1,
-                        ),
-                        getDrawingVerticalLine: (value) => FlLine(
-                          color: theme.dividerColor.withOpacity(0.05),
+                          color: theme.colorScheme.onSurface.withOpacity(0.05),
                           strokeWidth: 1,
                         ),
                       ),
@@ -101,7 +98,7 @@ class _HourlyGrowthChartState extends ConsumerState<HourlyGrowthChart> {
                           sideTitles: SideTitles(
                             showTitles: true,
                             reservedSize: 32,
-                            interval: 4,
+                            interval: 6,
                             getTitlesWidget: (value, meta) {
                               return Padding(
                                 padding: const EdgeInsets.only(top: 12.0),
@@ -110,7 +107,6 @@ class _HourlyGrowthChartState extends ConsumerState<HourlyGrowthChart> {
                                   style: TextStyle(
                                     fontSize: 10,
                                     color: theme.colorScheme.onSurface.withOpacity(0.4),
-                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               );
@@ -126,31 +122,22 @@ class _HourlyGrowthChartState extends ConsumerState<HourlyGrowthChart> {
                         LineChartBarData(
                           spots: data.map((d) => FlSpot(d.hour.toDouble(), d.amount)).toList(),
                           isCurved: true,
-                          preventCurveOverShooting: true,
                           gradient: LinearGradient(
                             colors: [
                               theme.colorScheme.primary,
-                              theme.colorScheme.primary.withOpacity(0.7),
+                              theme.colorScheme.secondary,
                             ],
                           ),
                           barWidth: 4,
                           isStrokeCapRound: true,
-                          dotData: FlDotData(
-                            show: true,
-                            getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
-                              radius: 0, // Hide by default
-                              color: theme.colorScheme.primary,
-                              strokeWidth: 2,
-                              strokeColor: theme.colorScheme.surface,
-                            ),
-                          ),
+                          dotData: const FlDotData(show: false),
                           belowBarData: BarAreaData(
                             show: true,
                             gradient: LinearGradient(
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
-                                theme.colorScheme.primary.withOpacity(0.3),
+                                theme.colorScheme.primary.withOpacity(0.2),
                                 theme.colorScheme.primary.withOpacity(0.0),
                               ],
                             ),

@@ -12,40 +12,85 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final authState = ref.watch(authStateProvider);
+    final user = authState.value;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              ActionConfirmSheet.show(
-                context: context,
-                title: 'Logout',
-                message: 'Are you sure you want to logout?',
-                confirmLabel: 'Logout',
-                confirmColor: Colors.red,
-                onConfirm: () => ref.read(authStateProvider.notifier).logout(),
-              );
-            },
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 140.0,
+            floating: false,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
+              title: Text(
+                'Analytics Dashboard',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onBackground,
+                ),
+              ),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      theme.colorScheme.primary.withOpacity(0.05),
+                      theme.colorScheme.background,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout_rounded),
+                onPressed: () => _handleLogout(context, ref),
+              ),
+              const SizedBox(width: 8),
+            ],
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome back, ${user?.name ?? 'Admin'}',
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: theme.colorScheme.onBackground.withOpacity(0.5),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  const RevenueWidget(),
+                  const SizedBox(height: 24),
+                  const HourlyGrowthChart(),
+                  const SizedBox(height: 24),
+                  const SalesPieChart(),
+                  const SizedBox(height: 24),
+                  const CountrySalesFlow(),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: const [
-            RevenueWidget(),
-            SizedBox(height: 16),
-            HourlyGrowthChart(),
-            SizedBox(height: 16),
-            SalesPieChart(),
-            SizedBox(height: 16),
-            CountrySalesFlow(),
-          ],
-        ),
-      ),
+    );
+  }
+
+  void _handleLogout(BuildContext context, WidgetRef ref) {
+    ActionConfirmSheet.show(
+      context: context,
+      title: 'Logout',
+      message: 'Are you sure you want to logout?',
+      confirmLabel: 'Logout',
+      confirmColor: Colors.red,
+      onConfirm: () => ref.read(authStateProvider.notifier).logout(),
     );
   }
 }
