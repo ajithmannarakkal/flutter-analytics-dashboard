@@ -40,7 +40,7 @@ class AdminRemoteDataSource {
   Future<Map<String, dynamic>> resetPassword(String userId, String newPassword) async {
     final response = await _dioClient.put(
       ApiConstants.resetPassword(userId),
-      data: {'password': newPassword},
+      data: {'newPassword': newPassword},
     );
     return response.data as Map<String, dynamic>;
   }

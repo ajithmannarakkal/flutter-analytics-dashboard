@@ -1,14 +1,28 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/domain/user_model.dart';
 import '../../auth/presentation/auth_provider.dart';
 import 'admin_provider.dart';
 
-class AdminDashboardScreen extends ConsumerWidget {
+class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
+  Timer? _debounce;
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final usersAsync = ref.watch(usersListProvider);
     final theme = Theme.of(context);
 
@@ -29,7 +43,12 @@ class AdminDashboardScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
-              onChanged: (val) => ref.read(searchQueryProvider.notifier).state = val,
+              onChanged: (val) {
+                if (_debounce?.isActive ?? false) _debounce!.cancel();
+                _debounce = Timer(const Duration(milliseconds: 500), () {
+                  ref.read(searchQueryProvider.notifier).state = val;
+                });
+              },
               decoration: InputDecoration(
                 hintText: 'Search users...',
                 prefixIcon: const Icon(Icons.search),
@@ -173,7 +192,6 @@ class UserCard extends ConsumerWidget {
           style: theme.textTheme.titleLarge?.copyWith(
             fontSize: 16,
             color: user.isActive ? null : Colors.grey,
-            decoration: user.isActive ? null : TextDecoration.lineThrough,
           ),
         ),
         subtitle: Text(
@@ -207,12 +225,19 @@ class UserCard extends ConsumerWidget {
                   case 'delete':
                     _confirmDelete(context, user, actions);
                     break;
+                  case 'reset':
+                    _showResetPasswordDialog(context, user, actions);
+                    break;
                 }
               },
               itemBuilder: (context) => [
                 PopupMenuItem(
                   value: 'toggle',
                   child: Text(user.isActive ? 'Disable User' : 'Enable User'),
+                ),
+                const PopupMenuItem(
+                  value: 'reset',
+                  child: Text('Reset Password'),
                 ),
                 const PopupMenuItem(
                   value: 'delete',
@@ -240,6 +265,49 @@ class UserCard extends ConsumerWidget {
               Navigator.pop(ctx);
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showResetPasswordDialog(BuildContext context, UserModel user, AdminActions actions) {
+    final passwordCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Reset Password for ${user.name}'),
+        content: TextField(
+          controller: passwordCtrl,
+          decoration: const InputDecoration(labelText: 'New Password'),
+          obscureText: true,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () async {
+              if (passwordCtrl.text.isNotEmpty) {
+                try {
+                  await actions.resetPassword(user.id, passwordCtrl.text.trim());
+                  if (context.mounted) {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Password reset successfully')),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(e.toString()),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              }
+            },
+            child: const Text('Reset'),
           ),
         ],
       ),

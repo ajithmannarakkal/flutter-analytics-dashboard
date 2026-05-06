@@ -31,6 +31,7 @@ class UserModel extends Equatable {
   }
 
   static bool _parseIsActive(Map<String, dynamic> json) {
+    if (json.containsKey('disabled')) return json['disabled'] == false;
     if (json.containsKey('isActive')) return json['isActive'] == true;
     if (json.containsKey('is_active')) return json['is_active'] == true;
     if (json.containsKey('active')) return json['active'] == true;
