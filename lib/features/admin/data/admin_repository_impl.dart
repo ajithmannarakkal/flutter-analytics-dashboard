@@ -10,8 +10,9 @@ class AdminRepositoryImpl implements AdminRepository {
   @override
   Future<List<UserModel>> getUsers({String? query}) async {
     final response = await _remoteDataSource.getUsers(query: query);
-    final data = response['data'] as List<dynamic>;
-    return data.map((json) => UserModel.fromJson(json as Map<String, dynamic>)).toList();
+    final dynamic rawData = response['data'];
+    if (rawData is! List) return [];
+    return rawData.map((json) => UserModel.fromJson(json as Map<String, dynamic>)).toList();
   }
 
   @override

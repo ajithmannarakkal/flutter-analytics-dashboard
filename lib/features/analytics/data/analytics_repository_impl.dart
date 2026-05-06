@@ -22,15 +22,17 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   @override
   Future<List<HourlyGrowth>> getHourlyGrowth() async {
     final response = await _remoteDataSource.getHourlyGrowth();
-    final dataList = response['data'] as List<dynamic>;
-    return dataList.map((e) => HourlyGrowth.fromJson(e)).toList();
+    final dynamic rawData = response['data'];
+    if (rawData is! List) return [];
+    return rawData.map((e) => HourlyGrowth.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   @override
   Future<List<LocationSales>> getCountrySalesFlow() async {
     final response = await _remoteDataSource.getCountries();
-    final dataList = response['data'] as List<dynamic>;
-    return dataList.map((e) => LocationSales.fromJson(e)).toList();
+    final dynamic rawData = response['data'];
+    if (rawData is! List) return [];
+    return rawData.map((e) => LocationSales.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   @override
