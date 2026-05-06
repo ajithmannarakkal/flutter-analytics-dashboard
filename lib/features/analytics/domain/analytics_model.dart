@@ -1,5 +1,25 @@
 import 'package:equatable/equatable.dart';
 
+double _parseDouble(dynamic value) {
+  if (value == null) return 0.0;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? 0.0;
+  if (value is Map) {
+    return _parseDouble(value['value'] ?? value['amount'] ?? value['total'] ?? value['revenue']);
+  }
+  return 0.0;
+}
+
+int _parseInt(dynamic value) {
+  if (value == null) return 0;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? 0;
+  if (value is Map) {
+    return _parseInt(value['count'] ?? value['value'] ?? value['amount'] ?? value['total']);
+  }
+  return 0;
+}
+
 class RevenueData extends Equatable {
   final double totalRevenue;
   final double percentageChange;
@@ -8,8 +28,8 @@ class RevenueData extends Equatable {
 
   factory RevenueData.fromJson(Map<String, dynamic> json) {
     return RevenueData(
-      totalRevenue: (json['totalRevenue'] as num).toDouble(),
-      percentageChange: (json['percentageChange'] as num).toDouble(),
+      totalRevenue: _parseDouble(json['totalRevenue'] ?? json['revenue'] ?? json['total']),
+      percentageChange: _parseDouble(json['percentageChange'] ?? json['percentage'] ?? json['change']),
     );
   }
 
@@ -25,8 +45,8 @@ class SalesSummary extends Equatable {
 
   factory SalesSummary.fromJson(Map<String, dynamic> json) {
     return SalesSummary(
-      successful: json['successful'] as int,
-      cancelled: json['cancelled'] as int,
+      successful: _parseInt(json['successful'] ?? json['success']),
+      cancelled: _parseInt(json['cancelled'] ?? json['cancel']),
     );
   }
 
@@ -42,8 +62,8 @@ class HourlyGrowth extends Equatable {
 
   factory HourlyGrowth.fromJson(Map<String, dynamic> json) {
     return HourlyGrowth(
-      hour: json['hour'] as int,
-      amount: (json['amount'] as num).toDouble(),
+      hour: _parseInt(json['hour'] ?? json['time']),
+      amount: _parseDouble(json['amount'] ?? json['value'] ?? json['total']),
     );
   }
 
@@ -66,9 +86,9 @@ class LocationSales extends Equatable {
 
   factory LocationSales.fromJson(Map<String, dynamic> json) {
     return LocationSales(
-      id: json['id'] as String? ?? json['name'] as String, // Fallback if id is missing
-      name: json['name'] as String,
-      totalSales: (json['totalSales'] as num).toDouble(),
+      id: json['id']?.toString() ?? json['name']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Unknown',
+      totalSales: _parseDouble(json['totalSales'] ?? json['sales'] ?? json['total'] ?? json['amount']),
     );
   }
 
