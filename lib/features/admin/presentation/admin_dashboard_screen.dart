@@ -25,29 +25,34 @@ class AdminDashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          const _AdminSearchBar(),
-          Expanded(
-            child: usersAsync.when(
-              data: (users) {
-                if (users.isEmpty) {
-                  return const Center(child: Text('No users found.'));
-                }
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: users.length,
-                  itemBuilder: (context, index) {
-                    final user = users[index];
-                    return UserCard(key: ValueKey(user.id), user: user);
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: Column(
+            children: [
+              const _AdminSearchBar(),
+              Expanded(
+                child: usersAsync.when(
+                  data: (users) {
+                    if (users.isEmpty) {
+                      return const Center(child: Text('No users found.'));
+                    }
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: users.length,
+                      itemBuilder: (context, index) {
+                        final user = users[index];
+                        return UserCard(key: ValueKey(user.id), user: user);
+                      },
+                    );
                   },
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, st) => Center(child: Text('Error: $e')),
-            ),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, st) => Center(child: Text('Error: $e')),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/admin/create-user'),

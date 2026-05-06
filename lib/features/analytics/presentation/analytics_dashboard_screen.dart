@@ -54,28 +54,52 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
             ],
           ),
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome back, ${user?.name ?? 'Admin'}',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onBackground.withOpacity(0.5),
-                    ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth > 900;
+                
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Welcome back, ${user?.name ?? 'Admin'}',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: theme.colorScheme.onBackground.withOpacity(0.5),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      
+                      // Responsive Grid for Charts
+                      if (isWide) ...[
+                        const RevenueWidget(),
+                        const SizedBox(height: 24),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Expanded(flex: 3, child: HourlyGrowthChart()),
+                            const SizedBox(width: 24),
+                            const Expanded(flex: 2, child: SalesPieChart()),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        const CountrySalesFlow(),
+                      ] else ...[
+                        const RevenueWidget(),
+                        const SizedBox(height: 24),
+                        const HourlyGrowthChart(),
+                        const SizedBox(height: 24),
+                        const SalesPieChart(),
+                        const SizedBox(height: 24),
+                        const CountrySalesFlow(),
+                      ],
+                      
+                      const SizedBox(height: 40),
+                    ],
                   ),
-                  const SizedBox(height: 32),
-                  const RevenueWidget(),
-                  const SizedBox(height: 24),
-                  const HourlyGrowthChart(),
-                  const SizedBox(height: 24),
-                  const SalesPieChart(),
-                  const SizedBox(height: 24),
-                  const CountrySalesFlow(),
-                  const SizedBox(height: 40),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ],
