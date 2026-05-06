@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/presentation/auth_provider.dart';
+import '../../../core/widgets/action_confirm_sheet.dart';
 import 'widgets/revenue_widget.dart';
 import 'widgets/sales_pie_chart.dart';
 import 'widgets/hourly_growth_chart.dart';
@@ -18,7 +19,14 @@ class AnalyticsDashboardScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
-              ref.read(authStateProvider.notifier).logout();
+              ActionConfirmSheet.show(
+                context: context,
+                title: 'Logout',
+                message: 'Are you sure you want to logout?',
+                confirmLabel: 'Logout',
+                confirmColor: Colors.red,
+                onConfirm: () => ref.read(authStateProvider.notifier).logout(),
+              );
             },
           ),
         ],

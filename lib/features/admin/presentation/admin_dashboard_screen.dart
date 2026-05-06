@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/domain/user_model.dart';
 import '../../auth/presentation/auth_provider.dart';
+import '../../../core/widgets/action_confirm_sheet.dart';
 import 'admin_provider.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
@@ -33,7 +34,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
-              ref.read(authStateProvider.notifier).logout();
+              ActionConfirmSheet.show(
+                context: context,
+                title: 'Logout',
+                message: 'Are you sure you want to logout?',
+                confirmLabel: 'Logout',
+                confirmColor: Colors.red,
+                onConfirm: () => ref.read(authStateProvider.notifier).logout(),
+              );
             },
           ),
         ],
@@ -220,10 +228,24 @@ class UserCard extends ConsumerWidget {
               onSelected: (value) {
                 switch (value) {
                   case 'toggle':
-                    actions.toggleUserStatus(user.id, !user.isActive);
+                    ActionConfirmSheet.show(
+                      context: context,
+                      title: user.isActive ? 'Disable User' : 'Enable User',
+                      message: 'Are you sure you want to ${user.isActive ? 'disable' : 'enable'} ${user.name}?',
+                      confirmLabel: user.isActive ? 'Disable' : 'Enable',
+                      confirmColor: user.isActive ? Colors.red : Colors.green,
+                      onConfirm: () => actions.toggleUserStatus(user.id, !user.isActive),
+                    );
                     break;
                   case 'delete':
-                    _confirmDelete(context, user, actions);
+                    ActionConfirmSheet.show(
+                      context: context,
+                      title: 'Delete User',
+                      message: 'Are you sure you want to permanently delete ${user.name}?',
+                      confirmLabel: 'Delete',
+                      confirmColor: Colors.red,
+                      onConfirm: () => actions.deleteUser(user.id),
+                    );
                     break;
                   case 'reset':
                     _showResetPasswordDialog(context, user, actions);
@@ -247,26 +269,6 @@ class UserCard extends ConsumerWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _confirmDelete(BuildContext context, UserModel user, AdminActions actions) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Confirm Delete'),
-        content: Text('Are you sure you want to delete ${user.name}?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () {
-              actions.deleteUser(user.id);
-              Navigator.pop(ctx);
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
       ),
     );
   }
