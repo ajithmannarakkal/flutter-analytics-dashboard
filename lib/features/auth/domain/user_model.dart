@@ -25,9 +25,17 @@ class UserModel extends Equatable {
       email: json['email'] as String? ?? '',
       name: json['name'] as String? ?? '',
       role: json['role'] == 'admin' ? Role.admin : Role.user,
-      isActive: json['isActive'] as bool? ?? true,
+      isActive: _parseIsActive(json),
       createdAt: json['createdAt'] as String?,
     );
+  }
+
+  static bool _parseIsActive(Map<String, dynamic> json) {
+    if (json.containsKey('isActive')) return json['isActive'] == true;
+    if (json.containsKey('is_active')) return json['is_active'] == true;
+    if (json.containsKey('active')) return json['active'] == true;
+    if (json.containsKey('status')) return json['status'] == 'active';
+    return true; // default fallback
   }
 
   Map<String, dynamic> toJson() {

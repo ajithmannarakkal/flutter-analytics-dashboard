@@ -117,6 +117,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                     obscureText: true,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    keyboardType: TextInputType.visiblePassword,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your password';

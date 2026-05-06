@@ -53,7 +53,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                   itemCount: users.length,
                   itemBuilder: (context, index) {
                     final user = users[index];
-                    return UserCard(user: user);
+                    return UserCard(key: ValueKey(user.id), user: user);
                   },
                 );
               },
@@ -157,16 +157,29 @@ class UserCard extends ConsumerWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      color: user.isActive ? null : theme.cardTheme.color?.withValues(alpha: 0.6),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: user.role == Role.admin ? theme.colorScheme.secondary : theme.colorScheme.primary,
+          backgroundColor: user.isActive 
+              ? (user.role == Role.admin ? theme.colorScheme.secondary : theme.colorScheme.primary)
+              : Colors.grey,
           child: Text(
             user.name[0].toUpperCase(),
             style: const TextStyle(color: Colors.white),
           ),
         ),
-        title: Text(user.name, style: theme.textTheme.titleLarge?.copyWith(fontSize: 16)),
-        subtitle: Text('${user.email} • ${user.role.name}'),
+        title: Text(
+          user.name, 
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontSize: 16,
+            color: user.isActive ? null : Colors.grey,
+            decoration: user.isActive ? null : TextDecoration.lineThrough,
+          ),
+        ),
+        subtitle: Text(
+          '${user.email} • ${user.role.name}',
+          style: TextStyle(color: user.isActive ? null : Colors.grey),
+        ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
