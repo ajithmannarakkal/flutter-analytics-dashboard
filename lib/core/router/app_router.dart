@@ -5,6 +5,7 @@ import '../../features/splash/presentation/splash_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/auth_provider.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/create_user_screen.dart';
 import '../../features/analytics/presentation/analytics_dashboard_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -60,6 +61,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin',
         builder: (context, state) => const AdminDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/admin/create-user',
+        builder: (context, state) => const CreateUserScreen(),
       ),
       GoRoute(
         path: '/analytics',
