@@ -51,7 +51,19 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
       response = await _remoteDataSource.getCities(parentId, page, limit);
     }
     
-    final dataList = response['data'] as List<dynamic>;
-    return dataList.map((e) => LocationSales.fromJson(e)).toList();
+    final dynamic rawData = response['data'];
+    final List<dynamic> dataList;
+    
+    if (rawData is Map && rawData.containsKey('data')) {
+      // It's a paginated response (Cities)
+      dataList = rawData['data'] as List<dynamic>;
+    } else if (rawData is List) {
+      // It's a direct list (States)
+      dataList = rawData;
+    } else {
+      dataList = [];
+    }
+    
+    return dataList.map((e) => LocationSales.fromJson(e as Map<String, dynamic>)).toList();
   }
 }

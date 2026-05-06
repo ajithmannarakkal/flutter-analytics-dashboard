@@ -85,10 +85,26 @@ class LocationSales extends Equatable {
   });
 
   factory LocationSales.fromJson(Map<String, dynamic> json) {
+    // Try to find a name in common fields used by different levels of drill-down
+    final name = json['city'] ?? 
+                 json['state'] ?? 
+                 json['country'] ?? 
+                 json['name'] ?? 
+                 json['location'] ?? 
+                 json['label'];
+
+    // Use name as the primary identifier for API calls as requested
+    final id = name ?? 
+               json['id'] ?? 
+               json['code'] ?? 
+               json['isoCode'] ?? 
+               json['country_code'] ?? 
+               json['state_code'];
+
     return LocationSales(
-      id: json['id']?.toString() ?? json['name']?.toString() ?? '',
-      name: json['name']?.toString() ?? 'Unknown',
-      totalSales: _parseDouble(json['totalSales'] ?? json['sales'] ?? json['total'] ?? json['amount']),
+      id: id?.toString() ?? '',
+      name: name?.toString() ?? 'Unknown',
+      totalSales: _parseDouble(json['totalSales'] ?? json['sales'] ?? json['total'] ?? json['amount'] ?? json['value']),
     );
   }
 

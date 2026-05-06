@@ -36,13 +36,13 @@ class ApiException implements Exception {
               message = message != 'Unexpected error occurred' ? message : 'Forbidden access';
               break;
             case 404:
-              message = 'Resource not found';
+              message = message != 'Unexpected error occurred' ? message : 'Resource not found';
               break;
             case 409:
               message = message != 'Unexpected error occurred' ? message : 'Conflict occurred';
               break;
             case 500:
-              message = 'Internal server error';
+              message = message != 'Unexpected error occurred' ? message : 'Internal server error';
               break;
           }
           break;

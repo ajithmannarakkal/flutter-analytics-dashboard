@@ -27,13 +27,13 @@ class AnalyticsRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> getStates(String country) async {
-    final response = await _dioClient.get(ApiConstants.states(country));
+    final response = await _dioClient.get(ApiConstants.states(Uri.encodeComponent(country)));
     return response.data as Map<String, dynamic>;
   }
 
   Future<Map<String, dynamic>> getCities(String state, int page, int limit) async {
     final response = await _dioClient.get(
-      ApiConstants.cities(state),
+      ApiConstants.cities(Uri.encodeComponent(state)),
       queryParameters: {'page': page, 'limit': limit},
     );
     return response.data as Map<String, dynamic>;
